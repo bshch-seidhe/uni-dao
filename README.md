@@ -1,13 +1,27 @@
-# Sample Hardhat Project
+# Uni DAO Token (UDT)
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+ERC-20 governance token deployed to Ethereum Sepolia testnet as a foundation for a university-style DAO voting MVP.
 
-Try running some of the following tasks:
+## Contract
+- Network: **Sepolia**
+- Token name: **Uni DAO Token**
+- Symbol: **UDT**
+- Decimals: **18**
+- Contract address: `0xE6fACBd14AF53EF9AC59C03aB49b08Fd0E0547Db`
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.js
-```
+## Features
+- ERC-20 token (OpenZeppelin)
+- Initial supply minted to deployer: **1,000,000 UDT**
+- Owner-controlled minting (`mint(to, amount)`) via `Ownable`
+
+## Tech stack
+- Solidity
+- Hardhat
+- Ethers.js
+- OpenZeppelin Contracts
+- MetaMask + Sepolia
+
+## Local setup
+```bash
+npm install
+npx hardhat compile
