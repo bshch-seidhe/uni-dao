@@ -1,27 +1,63 @@
 # Uni DAO Token (UDT)
 
-ERC-20 governance token deployed to Ethereum Sepolia testnet as a foundation for a university-style DAO voting MVP.
+**Uni DAO Token (UDT)** is an ERC-20 governance token deployed on the Ethereum **Sepolia testnet**.  
+It serves as the core access and voting mechanism for a university-style DAO MVP, focusing on transparency,
+immutability, and on-chain governance.
 
-## Contract
-- Network: **Sepolia**
-- Token name: **Uni DAO Token**
+---
+
+## 📜 Smart Contracts
+
+### UniToken (ERC-20)
+- Network: **Ethereum Sepolia**
+- Name: **Uni DAO Token**
 - Symbol: **UDT**
 - Decimals: **18**
-- Contract address: `0xE6fACBd14AF53EF9AC59C03aB49b08Fd0E0547Db`
+- Initial supply: **1,000,000 UDT**
+- Token contract address (Sepolia testnet):
+  `0xe8267Ddc857D0DDdCb114C988AB3EFdb1F2C12AB`
 
-## Features
-- ERC-20 token (OpenZeppelin)
-- Initial supply minted to deployer: **1,000,000 UDT**
-- Owner-controlled minting (`mint(to, amount)`) via `Ownable`
+### UniDAO (Governance)
+- Proposal creation
+- On-chain voting (1 address = 1 vote)
+- Quorum support (MVP configuration)
+- Proposal finalization
+- Governance-based mint & burn decisions
+- DAO contract address (Sepolia testnet):
+  `0x43664AFEC197919fE37De5197aD224240290C523`
 
-## Tech stack
-- Solidity
-- Hardhat
-- Ethers.js
-- OpenZeppelin Contracts
-- MetaMask + Sepolia
+---
 
-## Local setup
+## ✨ Features
+
+### Token (UniToken)
+- ERC-20 standard (OpenZeppelin)
+- Initial supply minted to deployer
+- Mint & burn controlled via governance (DAO)
+- Designed to be reusable beyond voting (events, access, utilities)
+
+### DAO (UniDAO)
+- Token-gated participation (UDT required)
+- Proposal lifecycle:
+  - create → vote → finalize
+- Fully on-chain voting history
+- Transparent and immutable governance logic
+
+---
+
+## 🧱 Tech Stack
+
+- **Solidity**
+- **Hardhat**
+- **Ethers.js**
+- **OpenZeppelin Contracts**
+- **MetaMask**
+- **Ethereum Sepolia Testnet**
+
+---
+
+## 🛠 Local Setup
+
 ```bash
 npm install
 npx hardhat compile
