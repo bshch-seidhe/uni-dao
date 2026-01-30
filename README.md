@@ -6,7 +6,7 @@ immutability, and on-chain governance.
 
 ---
 
-## 📜 Smart Contracts
+## Smart Contracts
 
 ### UniToken (ERC-20)
 - Network: **Ethereum Sepolia**
@@ -28,7 +28,7 @@ immutability, and on-chain governance.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Token (UniToken)
 - ERC-20 standard (OpenZeppelin)
@@ -45,7 +45,7 @@ immutability, and on-chain governance.
 
 ---
 
-## 🧱 Tech Stack
+## Tech Stack
 
 - **Solidity**
 - **Hardhat**
@@ -56,7 +56,7 @@ immutability, and on-chain governance.
 
 ---
 
-## 🛠 Local Setup
+## Local Setup
 
 ```bash
 npm install
