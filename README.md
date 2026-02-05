@@ -14,34 +14,32 @@ immutability, and on-chain governance.
 - Symbol: **UDT**
 - Decimals: **18**
 - Initial supply: **1,000,000 UDT**
+- Whitelist-transferable (only whitelisted addresses can send/receive)
 - Token contract address (Sepolia testnet):
-  `0xe8267Ddc857D0DDdCb114C988AB3EFdb1F2C12AB`
+  `0x9FBc08ba8C4f5b2E032a183509C4448e5CbCcE00`
 
-### UniDAO (Governance)
-- Proposal creation
-- On-chain voting (1 address = 1 vote)
+### UniDAO (Governance + Registrar)
+- Proposal creation (custom title + description)
+- On-chain voting (1 address = 1 vote, whitelisted students only)
+- Vote fee in UDT (sent to treasury)
 - Quorum support (MVP configuration)
 - Proposal finalization
-- Governance-based mint & burn decisions
+- Governance updates: quorum, treasury, vote fee, registrar
+- Registrar role for admin actions (add/remove students, mint/burn)
 - DAO contract address (Sepolia testnet):
-  `0x43664AFEC197919fE37De5197aD224240290C523`
+  `0x93DAD2d2f3De1785F1894029289F99bb9ad539B4`
 
 ---
 
-## Features
+## Governance Model (MVP)
 
-### Token (UniToken)
-- ERC-20 standard (OpenZeppelin)
-- Initial supply minted to deployer
-- Mint & burn controlled via governance (DAO)
-- Designed to be reusable beyond voting (events, access, utilities)
+- **Students vote on community proposals** (e.g. elections, events).
+- **Registrar handles admin tasks** without student voting:
+  - add/remove students
+  - mint/burn tokens
+- **DAO can replace the registrar** via proposal.
 
-### DAO (UniDAO)
-- Token-gated participation (UDT required)
-- Proposal lifecycle:
-  - create → vote → finalize
-- Fully on-chain voting history
-- Transparent and immutable governance logic
+This keeps the system decentralized while avoiding admin work for every student.
 
 ---
 
@@ -61,3 +59,35 @@ immutability, and on-chain governance.
 ```bash
 npm install
 npx hardhat compile
+```
+
+## Governance Workflow (MVP)
+
+1. Deploy `UniToken`.
+2. Whitelist initial student addresses, treasury, and the registrar.
+3. Deploy `UniDAO` with `TOKEN_ADDRESS`, `TREASURY_ADDRESS`, `VOTE_FEE`, and `REGISTRAR_ADDRESS`.
+4. Whitelist the DAO address.
+5. Transfer token ownership to the DAO.
+
+Sample scripts (env vars in `.env`):
+
+```bash
+TOKEN_ADDRESS=0x...
+ACCOUNT_ADDR=0x... ALLOWED=true npx hardhat run scripts/whitelist.js --network sepolia
+
+TREASURY_ADDRESS=0x... REGISTRAR_ADDRESS=0x... VOTE_FEE=1 \
+  npx hardhat run scripts/deploy-dao.js --network sepolia
+
+TOKEN_ADDRESS=0x... ACCOUNT_ADDR=0x... ALLOWED=true npx hardhat run scripts/whitelist.js --network sepolia
+
+TOKEN_ADDRESS=0x... DAO_ADDRESS=0x... npx hardhat run scripts/transfer-ownership.js --network sepolia
+```
+
+## Registrar Actions (admin, no voting)
+
+```bash
+DAO_ADDRESS=0x... STUDENT_ADDR=0x... npx hardhat run scripts/registrar-add-student.js --network sepolia
+DAO_ADDRESS=0x... STUDENT_ADDR=0x... npx hardhat run scripts/registrar-remove-student.js --network sepolia
+DAO_ADDRESS=0x... TO_ADDR=0x... AMOUNT=1 npx hardhat run scripts/registrar-mint.js --network sepolia
+DAO_ADDRESS=0x... FROM_ADDR=0x... AMOUNT=1 npx hardhat run scripts/registrar-burn.js --network sepolia
+```

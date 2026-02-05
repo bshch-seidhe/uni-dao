@@ -4,6 +4,9 @@ require("dotenv").config();
 const DAO_ADDRESS = process.env.DAO_ADDRESS;
 if (!DAO_ADDRESS) throw new Error("DAO_ADDRESS not set");
 
+const TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
+if (!TOKEN_ADDRESS) throw new Error("TOKEN_ADDRESS not set");
+
 const PROPOSAL_ID = process.env.PROPOSAL_ID;
 const SUPPORT = process.env.SUPPORT === "true";
 
@@ -11,6 +14,13 @@ async function main() {
   if (!PROPOSAL_ID) throw new Error("Set PROPOSAL_ID");
 
   const dao = await hre.ethers.getContractAt("UniDAO", DAO_ADDRESS);
+  const token = await hre.ethers.getContractAt("UniToken", TOKEN_ADDRESS);
+
+  const fee = await dao.voteFee();
+  if (fee > 0n) {
+    const approveTx = await token.approve(DAO_ADDRESS, fee);
+    await approveTx.wait();
+  }
 
   const tx = await dao.vote(PROPOSAL_ID, SUPPORT);
   const receipt = await tx.wait();

@@ -5,6 +5,8 @@ const DAO_ADDRESS = process.env.DAO_ADDRESS;
 if (!DAO_ADDRESS) throw new Error("DAO_ADDRESS not set");
 
 const NEW_QUORUM = process.env.NEW_QUORUM;
+const TITLE = process.env.TITLE || "Set quorum";
+const DESCRIPTION = process.env.DESCRIPTION || "Adjust minimum quorum";
 const DURATION = process.env.DURATION || "3600";
 
 async function main() {
@@ -12,7 +14,7 @@ async function main() {
 
   const dao = await hre.ethers.getContractAt("UniDAO", DAO_ADDRESS);
 
-  const tx = await dao.proposeSetQuorum(NEW_QUORUM, DURATION);
+  const tx = await dao.proposeSetQuorum(TITLE, DESCRIPTION, NEW_QUORUM, DURATION);
   const receipt = await tx.wait();
 
   console.log("✅ propose-set-quorum sent");

@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-const SEPOLIA_CHAIN_ID = "0xaa36a7";
+import { useEffect, useState } from "react";
+import { SEPOLIA_CHAIN_ID } from "../utils/constants";
 
 function ConnectWallet({ onConnect }) {
   const [account, setAccount] = useState(null);
@@ -22,8 +21,9 @@ function ConnectWallet({ onConnect }) {
         method: "eth_chainId",
       });
 
-      setAccount(accounts[0]);
-      onConnect(accounts[0]);
+      const acc = accounts[0];
+      setAccount(acc);
+      onConnect(acc);
       setNetworkOk(chainId === SEPOLIA_CHAIN_ID);
       setError("");
     } catch (err) {
@@ -42,6 +42,28 @@ function ConnectWallet({ onConnect }) {
       setError("Failed to switch network");
     }
   }
+
+  useEffect(() => {
+    if (!window.ethereum) return;
+
+    function handleAccountsChanged(accounts) {
+      const acc = accounts?.[0] || null;
+      setAccount(acc);
+      onConnect(acc);
+    }
+
+    function handleChainChanged(chainId) {
+      setNetworkOk(chainId === SEPOLIA_CHAIN_ID);
+    }
+
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+    window.ethereum.on("chainChanged", handleChainChanged);
+
+    return () => {
+      window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      window.ethereum.removeListener("chainChanged", handleChainChanged);
+    };
+  }, [onConnect]);
 
   return (
     <div>
