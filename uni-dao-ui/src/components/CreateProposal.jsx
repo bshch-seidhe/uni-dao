@@ -1,4 +1,5 @@
 import { useState } from "react";
+const byteLen = (s) => new TextEncoder().encode(s).length;
 
 const TYPES = [
   { value: "GENERAL", label: "General" },
@@ -6,6 +7,9 @@ const TYPES = [
   { value: "SET_TREASURY", label: "Set treasury" },
   { value: "SET_VOTE_FEE", label: "Set vote fee" },
   { value: "SET_REGISTRAR", label: "Set registrar" },
+  { value: "SET_TOKEN_OWNER", label: "Set token owner" },
+  { value: "SET_MEMBER_GRANT", label: "Set member grant" },
+  { value: "TRANSFER", label: "Transfer treasury funds" },
 ];
 
 function CreateProposal({ onCreate }) {
@@ -27,6 +31,8 @@ function CreateProposal({ onCreate }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    if (byteLen(title) > 128) return alert("Title too long (128 bytes max)");
+    if (byteLen(description) > 1024) return alert("Description too long (1024 bytes max)");
     onCreate({
       type,
       title,
@@ -39,12 +45,12 @@ function CreateProposal({ onCreate }) {
     reset();
   }
 
-  const needsTarget = ["SET_TREASURY", "SET_REGISTRAR"].includes(type);
-  const needsAmount = ["SET_VOTE_FEE"].includes(type);
+  const needsTarget = ["SET_TREASURY", "SET_REGISTRAR", "SET_TOKEN_OWNER", "TRANSFER"].includes(type);
+  const needsAmount = ["SET_VOTE_FEE", "SET_MEMBER_GRANT", "TRANSFER"].includes(type);
   const needsQuorum = type === "SET_QUORUM";
 
   return (
-    <form onSubmit={handleSubmit} style={{ border: "1px solid #333", padding: "16px" }}>
+    <form onSubmit={handleSubmit}>
       <h2>Create Proposal</h2>
 
       <label>
@@ -60,17 +66,22 @@ function CreateProposal({ onCreate }) {
 
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={128} required />
       </label>
 
       <label>
         Description
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          maxLength={1024}
+          required
+        />
       </label>
 
       {needsTarget && (
         <label>
-          Target address
+          {type === "TRANSFER" ? "Recipient address" : "Target address"}
           <input value={target} onChange={(e) => setTarget(e.target.value)} required />
         </label>
       )}
@@ -84,14 +95,21 @@ function CreateProposal({ onCreate }) {
 
       {needsQuorum && (
         <label>
-          New quorum
+          New quorum (basis points, e.g. 3000 = 30%)
           <input value={newQuorum} onChange={(e) => setNewQuorum(e.target.value)} required />
         </label>
       )}
 
       <label>
         Duration (seconds)
-        <input value={duration} onChange={(e) => setDuration(e.target.value)} required />
+        <input
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+          min="120"
+          max="2592000"
+          type="number"
+          required
+        />
       </label>
 
       <button type="submit">Submit Proposal</button>

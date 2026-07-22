@@ -73,16 +73,15 @@ function ConnectWallet({ onConnect }) {
         </button>
       )}
 
-      {account && (
-        <p>
-          Connected: <b>{account}</b>
-        </p>
+      {account && networkOk && (
+        <p className="net-ok">✓ Connected to Sepolia</p>
       )}
 
       {account && !networkOk && (
-        <button onClick={switchToSepolia}>
-          Switch to Sepolia
-        </button>
+        <p className="net-warn">
+          Wrong network.{" "}
+          <button onClick={switchToSepolia}>Switch to Sepolia</button>
+        </p>
       )}
 
       {error && <p style={{ color: "red" }}>{error}</p>}

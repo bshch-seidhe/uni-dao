@@ -23,15 +23,99 @@
   font-size: 1.05rem;
 }
 
-.wallet-info {
+.account-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.account-group {
   background: var(--panel);
   border: 2px solid var(--border);
-  padding: 14px;
-  margin: 16px 0 20px;
+  padding: 14px 16px;
   box-shadow: 6px 6px 0 var(--border);
+}
+
+.account-group h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.stat-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 2px solid var(--border);
+}
+
+.badge-ok {
+  background: #d8f5e3;
+  color: #0b5f58;
+}
+
+.badge-off {
+  background: #ffe0e0;
+  color: #a11;
+}
+
+.badge-warn {
+  background: #fff3d6;
+  color: #8a5b00;
+}
+
+.net-ok {
+  margin: 8px 0 0;
+  color: #0b5f58;
+  font-weight: 600;
+}
+
+.net-warn {
+  margin: 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a11;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .account-panel {
+    grid-template-columns: 1fr;
+  }
 }
 
 .grid {

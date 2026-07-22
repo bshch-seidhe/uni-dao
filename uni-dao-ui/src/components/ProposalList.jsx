@@ -1,10 +1,35 @@
+import { ethers } from "ethers";
+
+const TYPE_LABELS = [
+  "SET_QUORUM",
+  "GENERAL",
+  "SET_TREASURY",
+  "SET_VOTE_FEE",
+  "SET_REGISTRAR",
+  "SET_TOKEN_OWNER",
+  "SET_MEMBER_GRANT",
+  "TRANSFER",
+];
+
+const TARGET_TYPES = new Set([2, 4, 5, 7]); // SET_TREASURY, SET_REGISTRAR, SET_TOKEN_OWNER, TRANSFER
+const AMOUNT_TYPES = new Set([3, 6, 7]); // SET_VOTE_FEE, SET_MEMBER_GRANT, TRANSFER
+
+const STATE_LABELS = [
+  { label: "Active", className: "badge-ok" }, // 0
+  { label: "Awaiting finalize", className: "badge-warn" }, // 1
+  { label: "Passed", className: "badge-ok" }, // 2
+  { label: "Failed", className: "badge-off" }, // 3
+  { label: "Cancelled", className: "badge-off" }, // 4
+];
+
 function proposalTypeLabel(t) {
-  if (t === 0) return "SET_QUORUM";
-  if (t === 1) return "GENERAL";
-  if (t === 2) return "SET_TREASURY";
-  if (t === 3) return "SET_VOTE_FEE";
-  if (t === 4) return "SET_REGISTRAR";
-  return "UNKNOWN";
+  return TYPE_LABELS[t] ?? "UNKNOWN";
+}
+
+function amountLabel(t) {
+  if (t === 3) return "New fee";
+  if (t === 6) return "New member grant";
+  return "Amount";
 }
 
 function formatTime(ts) {
@@ -13,53 +38,86 @@ function formatTime(ts) {
 
 function formatAmount(value) {
   try {
-    return (Number(value) / 1e18).toString();
+    return ethers.formatUnits(value, 18);
   } catch {
     return value;
   }
 }
 
-function ProposalList({ proposals, onVote, onFinalize }) {
+function shortAddr(addr) {
+  if (!addr) return "—";
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
+
+function sameAddr(a, b) {
+  return a && b && a.toLowerCase() === b.toLowerCase();
+}
+
+function statusOf(p) {
+  return STATE_LABELS[p.state] ?? { label: "Unknown", className: "badge-off" };
+}
+
+function ProposalList({ proposals, account, onVote, onFinalize, onCancel }) {
   if (!proposals.length) return <p>No proposals yet</p>;
 
   return (
     <div>
       <h2>Proposals</h2>
 
-      {proposals.map((p) => (
-        <div key={p.id} className="card">
-          <p><b>ID:</b> {p.id}</p>
-          <p><b>Type:</b> {proposalTypeLabel(p.proposalType)}</p>
-          <p><b>Title:</b> {p.title}</p>
-          <p><b>Description:</b> {p.description}</p>
-          <p><b>Target:</b> {p.target}</p>
-          <p><b>Amount:</b> {formatAmount(p.amount)}</p>
-          <p><b>New quorum:</b> {p.newQuorum}</p>
-          <p><b>Deadline:</b> {formatTime(p.deadline)}</p>
-          <p>
-            <b>Votes:</b> ✅ {p.yesVotes} / ❌ {p.noVotes}
-          </p>
-          <p>
-            <b>Status:</b>{" "}
-            {p.executed
-              ? "Executed"
-              : Date.now() / 1000 > p.deadline
-              ? "Ended"
-              : "Active"}
-          </p>
+      {proposals.map((p) => {
+        const status = statusOf(p);
+        const canVote = p.state === 0 && !p.hasVoted;
+        const canFinalize = p.state === 1;
+        const canCancel = p.state === 0 && p.yesVotes + p.noVotes === 0 && sameAddr(account, p.proposer);
 
-          {!p.executed && Date.now() / 1000 <= p.deadline && (
+        return (
+          <div key={p.id} className="card">
+            <p><b>ID:</b> {p.id}</p>
+            <p><b>Type:</b> {proposalTypeLabel(p.proposalType)}</p>
+            <p><b>Title:</b> {p.title}</p>
+            <p><b>Description:</b> {p.description}</p>
+            <p>
+              <b>Proposer:</b>{" "}
+              <span className="mono" title={p.proposer}>{shortAddr(p.proposer)}</span>
+              {sameAddr(account, p.proposer) ? " (you)" : ""}
+            </p>
+            {TARGET_TYPES.has(p.proposalType) ? (
+              <p><b>Target:</b> <span className="mono" title={p.target}>{shortAddr(p.target)}</span></p>
+            ) : null}
+            {AMOUNT_TYPES.has(p.proposalType) ? (
+              <p><b>{amountLabel(p.proposalType)}:</b> {formatAmount(p.amount)} UDT</p>
+            ) : null}
+            {p.proposalType === 0 ? (
+              <p><b>New quorum (bps):</b> {p.newQuorum}</p>
+            ) : null}
+            <p><b>Quorum to pass:</b> {p.quorum}</p>
+            <p><b>Deadline:</b> {formatTime(p.deadline)}</p>
+            <p>
+              <b>Votes:</b> ✅ {p.yesVotes} / ❌ {p.noVotes}
+              {p.hasVoted ? " — you voted" : ""}
+            </p>
+            <p>
+              <b>Status:</b>{" "}
+              <span className={`badge ${status.className}`}>{status.label}</span>
+            </p>
+
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => onVote(p.id, true)}>Vote Yes</button>
-              <button onClick={() => onVote(p.id, false)}>Vote No</button>
+              {canVote && (
+                <>
+                  <button onClick={() => onVote(p.id, true)}>Vote Yes</button>
+                  <button onClick={() => onVote(p.id, false)}>Vote No</button>
+                </>
+              )}
+              {canFinalize && (
+                <button onClick={() => onFinalize(p.id)}>Finalize</button>
+              )}
+              {canCancel && (
+                <button onClick={() => onCancel(p.id)}>Cancel</button>
+              )}
             </div>
-          )}
-
-          {!p.executed && Date.now() / 1000 > p.deadline && (
-            <button onClick={() => onFinalize(p.id)}>Finalize</button>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
