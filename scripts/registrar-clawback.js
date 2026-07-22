@@ -11,9 +11,9 @@ if (!DAO_ADDRESS || !FROM) {
 async function main() {
   const dao = await hre.ethers.getContractAt("UniDAO", DAO_ADDRESS);
   const amount = hre.ethers.parseUnits(AMOUNT, 18);
-  const tx = await dao.registrarBurn(FROM, amount);
+  const tx = await dao.registrarClawback(FROM, amount);
   await tx.wait();
-  console.log("✅ registrar burn:", FROM, AMOUNT, "UDT");
+  console.log("✅ registrar clawback:", FROM, AMOUNT, "UDT");
 }
 
 main().catch(console.error);

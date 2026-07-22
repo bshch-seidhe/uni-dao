@@ -16,7 +16,7 @@ async function main() {
   const token = await hre.ethers.getContractAt("UniToken", tokenAddress);
 
   const amount = hre.ethers.parseUnits(AMOUNT, 18);
-  const tx = await token.burn(FROM, amount);
+  const tx = await token.adminBurn(FROM, amount);
 
   console.log("caller:", caller.address);
   console.log("burn from:", FROM);
