@@ -1,25 +1,38 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
-
+/* Tokyo Night theme. */
 :root {
-  --bg: #f6f2ea;
-  --bg-2: #f0e7d8;
-  --panel: #ffffff;
-  --text: #141414;
-  --muted: #5a5a5a;
-  --accent: #0f766e;
-  --accent-2: #f97316;
-  --border: #1f1f1f;
-  font-family: "Space Grotesk", system-ui, sans-serif;
-  line-height: 1.5;
+  --bg: #1a1b26;
+  --bg-deep: #13141c;
+  --surface: #1f2230;
+  --surface-2: #24283b;
+  --divider: #292e42;
+  --border: #414868;
+  --field: #0e0e14;
+
+  --text: #c0caf5;
+  --text-2: #a9b1d6;
+  --muted: #8b93b8;
+
+  --brand: #9ece6a;
+  --brand-ink: #0c0e10;
+  --red: #f7768e;
+  --yellow: #e0af68;
+  --blue: #7aa2f7;
+  --purple: #bb9af7;
+
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+
+  color-scheme: dark;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text);
-  background: radial-gradient(1200px 500px at 20% -10%, #f7d9b7 0%, transparent 60%),
-    radial-gradient(1000px 600px at 90% -20%, #d7f1ee 0%, transparent 60%),
-    linear-gradient(180deg, var(--bg), var(--bg-2));
+  background: var(--bg);
 }
 
 * {
@@ -29,17 +42,32 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--bg);
+}
+
+::selection {
+  background: var(--divider);
+  color: var(--text);
 }
 
 a {
-  color: var(--accent);
+  color: var(--blue);
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 button,
 input,
 select,
 textarea {
-  font-family: inherit;
-  font-size: 1rem;
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }

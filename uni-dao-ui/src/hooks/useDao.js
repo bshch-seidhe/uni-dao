@@ -39,9 +39,11 @@ export function useDao(account) {
       const signer = await provider.getSigner();
       await run(signer);
       await refresh();
+      return true;
     } catch (e) {
       console.error(e);
       setError(errMsg(e, fallbackError));
+      return false;
     }
   }
 
@@ -99,28 +101,28 @@ export function useDao(account) {
   }
 
   async function registrarAddStudent(address) {
-    await withSigner(async (signer) => {
+    return withSigner(async (signer) => {
       const tx = await daoWith(signer).registrarAddStudent(address);
       await tx.wait();
     }, "Add student failed");
   }
 
   async function registrarAddStudents(addresses) {
-    await withSigner(async (signer) => {
+    return withSigner(async (signer) => {
       const tx = await daoWith(signer).registrarAddStudents(addresses);
       await tx.wait();
     }, "Add students failed");
   }
 
   async function registrarRemoveStudent(address) {
-    await withSigner(async (signer) => {
+    return withSigner(async (signer) => {
       const tx = await daoWith(signer).registrarRemoveStudent(address);
       await tx.wait();
     }, "Remove student failed");
   }
 
   async function registrarMint(address, amountUdt) {
-    await withSigner(async (signer) => {
+    return withSigner(async (signer) => {
       const tx = await daoWith(signer).registrarMint(
         address,
         ethers.parseUnits(amountUdt, 18)
@@ -130,7 +132,7 @@ export function useDao(account) {
   }
 
   async function createProposal(payload) {
-    await withSigner(async (signer) => {
+    return withSigner(async (signer) => {
       const dao = daoWith(signer);
 
       let tx;

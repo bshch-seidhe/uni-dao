@@ -15,11 +15,11 @@ const TARGET_TYPES = new Set([2, 4, 5, 7]); // SET_TREASURY, SET_REGISTRAR, SET_
 const AMOUNT_TYPES = new Set([3, 6, 7]); // SET_VOTE_FEE, SET_MEMBER_GRANT, TRANSFER
 
 const STATE_LABELS = [
-  { label: "Active", className: "badge-ok" }, // 0
-  { label: "Awaiting finalize", className: "badge-warn" }, // 1
-  { label: "Passed", className: "badge-ok" }, // 2
-  { label: "Failed", className: "badge-off" }, // 3
-  { label: "Cancelled", className: "badge-off" }, // 4
+  { label: "active", className: "badge-ok" }, // 0
+  { label: "awaiting finalize", className: "badge-warn" }, // 1
+  { label: "passed", className: "badge-done" }, // 2
+  { label: "failed", className: "badge-off" }, // 3
+  { label: "cancelled", className: "badge-muted" }, // 4
 ];
 
 function proposalTypeLabel(t) {
@@ -57,13 +57,41 @@ function statusOf(p) {
   return STATE_LABELS[p.state] ?? { label: "Unknown", className: "badge-off" };
 }
 
-function ProposalList({ proposals, account, onVote, onFinalize, onCancel }) {
-  if (!proposals.length) return <p>No proposals yet</p>;
+// The bar's full width is the quorum, or the votes cast once they exceed it.
+function VoteBar({ yes, no, quorum, hasVoted }) {
+  const cast = yes + no;
+  const scale = Math.max(quorum, cast, 1);
+  const reached = cast >= quorum;
 
   return (
-    <div>
-      <h2>Proposals</h2>
+    <div className="votes">
+      <div
+        className="vote-bar"
+        role="img"
+        aria-label={`${yes} yes, ${no} no, ${cast} of ${quorum} votes needed for quorum`}
+      >
+        <span className="vote-yes" style={{ width: `${(yes / scale) * 100}%` }} />
+        <span className="vote-no" style={{ width: `${(no / scale) * 100}%` }} />
+      </div>
+      <p className="vote-legend">
+        <span className="yes">yes {yes}</span>
+        <span className="no">no {no}</span>
+        <span className={reached ? "yes" : "muted"}>
+          {reached ? "quorum reached" : `quorum ${cast}/${quorum}`}
+        </span>
+        {hasVoted && <span className="muted">you voted</span>}
+      </p>
+    </div>
+  );
+}
 
+function ProposalList({ proposals, account, onVote, onFinalize, onCancel }) {
+  if (!proposals.length) {
+    return <p className="empty">No proposals yet. Create the first one with the new proposal form.</p>;
+  }
+
+  return (
+    <div className="proposal-list">
       {proposals.map((p) => {
         const status = statusOf(p);
         const canVote = p.state === 0 && !p.hasVoted;
@@ -71,51 +99,63 @@ function ProposalList({ proposals, account, onVote, onFinalize, onCancel }) {
         const canCancel = p.state === 0 && p.yesVotes + p.noVotes === 0 && sameAddr(account, p.proposer);
 
         return (
-          <div key={p.id} className="card">
-            <p><b>ID:</b> {p.id}</p>
-            <p><b>Type:</b> {proposalTypeLabel(p.proposalType)}</p>
-            <p><b>Title:</b> {p.title}</p>
-            <p><b>Description:</b> {p.description}</p>
-            <p>
-              <b>Proposer:</b>{" "}
-              <span className="mono" title={p.proposer}>{shortAddr(p.proposer)}</span>
-              {sameAddr(account, p.proposer) ? " (you)" : ""}
-            </p>
-            {TARGET_TYPES.has(p.proposalType) ? (
-              <p><b>Target:</b> <span className="mono" title={p.target}>{shortAddr(p.target)}</span></p>
-            ) : null}
-            {AMOUNT_TYPES.has(p.proposalType) ? (
-              <p><b>{amountLabel(p.proposalType)}:</b> {formatAmount(p.amount)} UDT</p>
-            ) : null}
-            {p.proposalType === 0 ? (
-              <p><b>New quorum (bps):</b> {p.newQuorum}</p>
-            ) : null}
-            <p><b>Quorum to pass:</b> {p.quorum}</p>
-            <p><b>Deadline:</b> {formatTime(p.deadline)}</p>
-            <p>
-              <b>Votes:</b> ✅ {p.yesVotes} / ❌ {p.noVotes}
-              {p.hasVoted ? " — you voted" : ""}
-            </p>
-            <p>
-              <b>Status:</b>{" "}
+          <article key={p.id} className="proposal">
+            <header className="proposal-head">
+              <span className="proposal-id">#{p.id}</span>
+              <span className="proposal-type">{proposalTypeLabel(p.proposalType)}</span>
               <span className={`badge ${status.className}`}>{status.label}</span>
-            </p>
+            </header>
 
-            <div style={{ display: "flex", gap: "8px" }}>
-              {canVote && (
+            <h3 className="proposal-title">{p.title}</h3>
+            {p.description && <p className="proposal-desc">{p.description}</p>}
+
+            <dl className="kv">
+              <dt>proposer</dt>
+              <dd>
+                <span className="addr" title={p.proposer}>{shortAddr(p.proposer)}</span>
+                {sameAddr(account, p.proposer) && <span className="you"> (you)</span>}
+              </dd>
+              {TARGET_TYPES.has(p.proposalType) && (
                 <>
-                  <button onClick={() => onVote(p.id, true)}>Vote Yes</button>
-                  <button onClick={() => onVote(p.id, false)}>Vote No</button>
+                  <dt>target</dt>
+                  <dd><span className="addr" title={p.target}>{shortAddr(p.target)}</span></dd>
                 </>
               )}
-              {canFinalize && (
-                <button onClick={() => onFinalize(p.id)}>Finalize</button>
+              {AMOUNT_TYPES.has(p.proposalType) && (
+                <>
+                  <dt>{amountLabel(p.proposalType).toLowerCase()}</dt>
+                  <dd>{formatAmount(p.amount)} UDT</dd>
+                </>
               )}
-              {canCancel && (
-                <button onClick={() => onCancel(p.id)}>Cancel</button>
+              {p.proposalType === 0 && (
+                <>
+                  <dt>new quorum</dt>
+                  <dd>{Number(p.newQuorum) / 100}% ({p.newQuorum} bps)</dd>
+                </>
               )}
-            </div>
-          </div>
+              <dt>deadline</dt>
+              <dd>{formatTime(p.deadline)}</dd>
+            </dl>
+
+            <VoteBar yes={p.yesVotes} no={p.noVotes} quorum={p.quorum} hasVoted={p.hasVoted} />
+
+            {(canVote || canFinalize || canCancel) && (
+              <div className="actions">
+                {canVote && (
+                  <>
+                    <button className="btn-yes" onClick={() => onVote(p.id, true)}>Vote yes</button>
+                    <button className="btn-no" onClick={() => onVote(p.id, false)}>Vote no</button>
+                  </>
+                )}
+                {canFinalize && (
+                  <button className="btn-primary" onClick={() => onFinalize(p.id)}>Finalize</button>
+                )}
+                {canCancel && (
+                  <button onClick={() => onCancel(p.id)}>Cancel proposal</button>
+                )}
+              </div>
+            )}
+          </article>
         );
       })}
     </div>
