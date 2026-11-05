@@ -29,11 +29,11 @@ function CreateProposal({ onCreate }) {
     setNewQuorum("");
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (byteLen(title) > 128) return alert("Title too long (128 bytes max)");
     if (byteLen(description) > 1024) return alert("Description too long (1024 bytes max)");
-    onCreate({
+    const ok = await onCreate({
       type,
       title,
       description,
@@ -42,7 +42,7 @@ function CreateProposal({ onCreate }) {
       newQuorum,
       duration: Number(duration),
     });
-    reset();
+    if (ok) reset();
   }
 
   const needsTarget = ["SET_TREASURY", "SET_REGISTRAR", "SET_TOKEN_OWNER", "TRANSFER"].includes(type);
@@ -50,8 +50,8 @@ function CreateProposal({ onCreate }) {
   const needsQuorum = type === "SET_QUORUM";
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Create Proposal</h2>
+    <form className="tile" onSubmit={handleSubmit}>
+      <h2 className="tile-title">new proposal</h2>
 
       <label>
         Type
@@ -95,13 +95,15 @@ function CreateProposal({ onCreate }) {
 
       {needsQuorum && (
         <label>
-          New quorum (basis points, e.g. 3000 = 30%)
+          New quorum (basis points)
+          <span className="field-hint">3000 = 30% of members</span>
           <input value={newQuorum} onChange={(e) => setNewQuorum(e.target.value)} required />
         </label>
       )}
 
       <label>
         Duration (seconds)
+        <span className="field-hint">120 s minimum, 2592000 s (30 days) maximum</span>
         <input
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
@@ -112,7 +114,7 @@ function CreateProposal({ onCreate }) {
         />
       </label>
 
-      <button type="submit">Submit Proposal</button>
+      <button type="submit" className="btn-primary">Create proposal</button>
     </form>
   );
 }
